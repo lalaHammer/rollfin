@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <!-- 设置视口 -->
+  <meta name="viewport" content="width=device,initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui">
+  <!--指定屏幕方向-->
+  <meta name="screen-orientation" content="portrait" />
+  <!--网站开启对 web app 程序的支持。该 meta 可以看出内容为“苹果设备 web 应用程序 xx”，就是说该 meta 是专门定义 web 应用的-->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <!--telephone=no就禁止了把数字转化为拨号链接!-->
+  <meta name="format-detection" content="telephone=no">
+  <!-- UC强制全屏 -->
+  <meta name="full-screen" content="yes">
+  <!-- QQ强制全屏 -->
+  <meta name="x5-fullscreen" content="true">
+  <title>学生定位签到--叮叮当</title>
+</head>
+
+<body>
+  <div id="app"></div>
+  <!-- built files will be auto injected -->
+  <!--引入获取设备ip地址插件  -->
+  <script src="http://pv.sohu.com/cityjson?ie=utf-8"></script>
+  <!--引入高德地图JSAPI -->
+  <script src="http://webapi.amap.com/maps?v=1.3&key=f9c2ada2ba18abf4f6e85680b27134d5"></script>
+  <!--引入UI组件库（1.0版本） -->
+  <script src="//webapi.amap.com/ui/1.0/main.js"></script>
+</body>
+
+</html>
