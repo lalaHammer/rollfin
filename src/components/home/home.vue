@@ -64,6 +64,7 @@ export default {
             who: false,//教师账号为false(0)，学生账号为true(1)
             today: {},
             inOrOut: false,
+            user: this.$store.state.user,
         }
     },
     components: {
@@ -113,19 +114,29 @@ export default {
         });
          //获取当前日期
         this.today = this.getTime();
+        console.log(this.fliterCourse());
         
     },
     methods: {
+        //点击进行签到
         sign() {
             console.log('签到...');
              //创建围栏
-            this.$refs.map.createPoint();
+            // this.$refs.map.createPoint();
             //判断当前是否可以进行签到
             var pointMsg=this.$refs.map.outOrIn();
             if(pointMsg){
                 this.inOrOut=true;
                 console.log(pointMsg);
+                let signTime=this.getTime().time;
+                
+                let data={
+                    'user':this.user,
+                    'type':type,
+                    'time':signTime,
+                }
             }else{
+                this.inOrOut=false;
                 console.log('err'+pointMsg);
             }
 
@@ -138,10 +149,12 @@ export default {
             var date = new Date();
             var month = this.checkDate(date.getMonth() + 1),
                 day = this.checkDate(date.getDate()),
-                week = weekArr[date.getDay()];
+                week = weekArr[date.getDay()],
+                time = date.getTime();
             return {
                 "week": week,
-                "day": month + '-' + day
+                "day": month + '-' + day,
+                'time':time
             };
         },
         //格式化日期
@@ -152,6 +165,27 @@ export default {
                 return date;
             }
         },
+        //筛选需要进行签到的课程
+        fliterCourse(){
+           var arr=[];
+           var _this=this;
+           $.each(_this.scheduleList,(i)=>{
+             var flag=true;
+             if(arr.length>0){
+                $.each(arr,(n)=>{
+                  if(arr[i].positon<35){
+                       if(arr[n].scheduleName == _this.scheduleList[i],scheduleName){
+                           flag=false;
+                       }
+                  }
+                });
+             }
+             if(flag){
+                 arr.push(_this.scheduleList[i])
+             }
+           });
+           return arr;
+        }
     }
 
 
