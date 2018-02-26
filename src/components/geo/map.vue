@@ -68,13 +68,13 @@ export default {
 
             //创建围栏
             this.reseacherRail();
-            if (!this.havenRail) {
-                for (let i in this.pointsArr) {
-                    this.createRail(i, this.pointsArr[i]);
-                }
-            }else{
-                console.log('已创建围栏');
-            }
+            // if (!this.havenRail) {
+            //     for (let i in this.pointsArr) {
+            //         this.createRail(i, this.pointsArr[i]);
+            //     }
+            // } else {
+            //     console.log('已创建围栏');
+            // }
 
         },
 
@@ -93,12 +93,16 @@ export default {
                 hour = this.checkDate(date.getHours()),
                 min = this.checkDate(date.getMinutes()),
                 sec = this.checkDate(date.getSeconds()),
-                currentTime = year + '/' + month + '/' + day + "  " + hour + ":" + min + ":" + sec,
+                currentTime = year + '-' + month + '-' + day + " " + hour + ":" + min + ":" + sec,
+                time=date.getTime(),
                 week = weekArr[date.getDay()];
             return {
                 'currentTime': currentTime,
                 "week": week,
-                "day": month + '-' + day
+                "day": month + '-' + day,
+                "time":time,
+                'signTime': hour+':'+min,
+                'signDay':year + '-' + month + '-' + day
             };
         },
         //格式化日期
@@ -137,7 +141,7 @@ export default {
             $.get({
                 url: 'http://restapi.amap.com/v4/geofence/meta?key=1d62d5d73074e9d614c1581397b70a29',
                 success(res) {
-                    console.log(res);
+                    console.log('已存在围栏');
                     this.havenRail = true;
                 },
                 error(err) {
@@ -148,51 +152,27 @@ export default {
             })
         },
         //查询定位是否在围栏中
-        outOrIn() {
+        returnPoint() {
             var _this = this;
             let time = new Date().getTime();
             console.log('开始测试。。。。');
             var myData = {};
             switch (this.ismobile()) {//没有权限获取识别码，暂代
                 case 'ad':
-                    myData={
-                        diu:'99001021626653',
+                    myData = {
+                        diu: '99001021626653',
                         locations: this.lng + ',' + this.lat + ',1484816232'
-                    };break;
-                case 'ios': 
-                     myData={
-                        diu:'359241060970941',
+                    }; break;
+                case 'ios':
+                    myData = {
+                        diu: '359241060970941',
                         //locations: this.lng + ',' + this.lat + ',1484816232'
                         locations: '113.19043,23.408799' + ',1484816232'
-                    };break;
+                    }; break;
                 case 'ot': Toast('仅支持Android和IOS系统'); break;
             }
-           console.log(myData)
-           var loca=_this.lng + ',' + _this.lat + ',' + time;
-            $.ajax({
-                url: 'http://restapi.amap.com/v4/geofence/status?key=1d62d5d73074e9d614c1581397b70a29',
-                type: 'GET',
-                dataTyep: 'json',
-                header: 'Access-Control-Allow-Origin:*',
-                data: myData,
-                success(res) {
-                    console.log(res)
-                    if(res.errmsg=='OK'){
-                        if(res.data.nearest_fence_distance){//不在围栏内
-                             Toast('目前不在签到范围内！！');
-                        }else{
-                            if(res.data.fencing_event_list.length>0 && res.data.fencing_event_list.client_status=='in'){//在围栏中
-                                   
-                            }
-                        }
-                    }
-                  
-                },
-                error(err) {
-                    Toast('定位失败');
-                    return fasle;
-                }
-            });
+            return myData;
+           
         },
         //判断手机型号
         ismobile() {

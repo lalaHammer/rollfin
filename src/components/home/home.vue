@@ -3,8 +3,8 @@
         <!--学生账号登录显示  -->
         <div class="headerImg">
             <!-- <div>
-                        <span>广东第二师范学院</span>
-                    </div> -->
+                                                        <span>广东第二师范学院</span>
+                                                    </div> -->
         </div>
         <div v-if="who" style="flex:3">
             <div class="schedule">
@@ -27,13 +27,13 @@
                 </div>
             </div>
             <div class="signBox">
-                <div class="signCir" @click="sign()" >
+                <div class="signCir" @click="sign()">
                     <div class="sign" :class="inOrOut? '' : 'gray'">
                         <span>签到</span>
                     </div>
                 </div>
                 <p class="prompt">
-                    <p v-if="inOrOut"> 
+                    <p v-if="inOrOut">
                         <img alt="" src="../../assets/in.png">
                         <span>已进入考勤范围</span>
                     </p>
@@ -65,6 +65,7 @@ export default {
             today: {},
             inOrOut: false,
             user: this.$store.state.user,
+            signType:'',//0出勤 1迟到 2缺勤
         }
     },
     components: {
@@ -72,7 +73,8 @@ export default {
     },
     created() {
         this.$store.commit('changeTitle', '叮叮当');
-        var whoIs = this.$store.state.who;
+        // var whoIs = this.$store.state.who;
+        var whoIs = "student"
         if (whoIs == 'teacher') {
             this.who = false;
         } else if (whoIs == 'student') {
@@ -106,86 +108,192 @@ export default {
                 }
                 console.log('today');
                 console.log(_this.scheduleList);
-
+                
             },
             error(err) {
                 console.log(err);
             }
         });
-         //获取当前日期
-        this.today = this.getTime();
-        console.log(this.fliterCourse());
-        
+
+
+
+
+    },
+    mounted() {
+        this.today = this.$refs.map.getTime();
+        //判断当前是否可以进行签到
+        console.log('判断是否可签到');
+        var myData = this.$refs.map.returnPoint(), _this = this;
+
+        $.ajax({
+            url: 'http://restapi.amap.com/v4/geofence/status?key=1d62d5d73074e9d614c1581397b70a29',
+            type: 'GET',
+            dataTyep: 'json',
+            header: 'Access-Control-Allow-Origin:*',
+            data: myData,
+            success(res) {
+                console.log(res);
+                if (res.data.fencing_event_list.length > 0 && res.data.fencing_event_list[0].client_status == 'in') {
+                    _this.inOrOut = true;
+                }
+            },
+            error(err) {
+                Toast('定位失败');
+                return fasle;
+            }
+        });
     },
     methods: {
         //点击进行签到
         sign() {
             console.log('签到...');
-             //创建围栏
+        
+            //创建围栏
             // this.$refs.map.createPoint();
-            //判断当前是否可以进行签到
-            var pointMsg=this.$refs.map.outOrIn();
-            if(pointMsg){
-                this.inOrOut=true;
-                console.log(pointMsg);
-                let signTime=this.getTime().time;
-                
-                let data={
-                    'user':this.user,
-                    'type':type,
-                    'time':signTime,
+       //判断需要进行签到的课程
+       var filterCour=this.filterCourse();
+       if(filterCour.length<1){
+           return ;
+       }
+       this.judgeTime(filterCour);
+       console.log(this.signType);
+       $.post({
+           url:'',
+           dataTyep: 'json',
+           header: 'Access-Control-Allow-Origin:*',
+           data:{name:},
+           success(res){
+
+           },
+           error(err){
+
+           }
+       });
+
+
+        },
+
+        //筛选需要进行签到的课程
+        filterCourse() {
+            var arr = [], arr2 = [];
+            $.each(this.scheduleList, (i) => {
+                var flag = true;
+                if (arr.length > 0) {
+                    $.each(arr, (n) => {
+                        if (this.scheduleList[i].position < 35) {
+                            if (arr[n].scheduleName == this.scheduleList[i].scheduleName) {
+                                flag=false;
+                            }
+                        }
+
+                    });
+                }
+                flag=true;
+                if (arr2.length > 0) {
+                    $.each(arr2, (n) => {
+                        console.log('la')
+                        if (arr2[n].scheduleName == this.scheduleList[i].scheduleName) {
+                            flag = false;
+                        }
+
+                    });
+                }
+                if (flag) {
+                    if (this.scheduleList[i].position < 35) {
+                        arr.push(this.scheduleList[i]);
+                        flag = true;
+                    } else {
+                        arr2.push(this.scheduleList[i]);
+                    }
+
+                }
+            });
+            return arr.concat(arr2);
+        },
+        
+        //判断当前是否为可签到时间
+        judgeTime(arr){
+        //    var thisHour=new Date().getHours();
+        var thisHour='8',
+            _this=this;
+           console.log(thisHour);
+           switch(thisHour){
+               case '8':
+               console.log('第一二节')
+               $.each(arr,(i,item)=>{
+                   if(item.position<14){
+                       if(item.position<7){
+                           console.log('第一节')
+                           _this.judge(0);//第一节课
+                       }else{
+                           _this.judge(1);//第二节课
+                       }
+                   }
+               });break;
+               case "9":
+               $.each(arr,(i,item)=>{
+                  if(item.position>=14 && item.position<21){
+                      _this.judge(2);//第三节课
+                  }
+               });break;
+               case '10':
+               $.each(arr,(i,item)=>{
+                   if(item.position>=21 && item.position<28){
+                       _this.judge(3);//第四节课
+                   }
+               });break;
+              case '11':
+               $.each(arr,(i,item)=>{
+                   if(item.position>=28 && item.position<35){
+                       _this.judge(4);//第5节课
+                   }
+               });break;
+               case '14':
+               $.each(arr,(i,item)=>{
+                   if(item.position>=34 && item.position<49){
+                       if(item.position<42){
+                           _this.judge(5);//第6节课
+                       }else{
+                           _this.judge(6);//第7节课
+                       }
+                   }
+               });break;
+               case '15':
+               $.each(arr,(i,item)=>{
+                   if(item.position>=49 && item.position<56){
+                       _this.judge(7);//第8节课
+                   }
+               });break;
+               case '14':
+               $.each(arr,(i,item)=>{
+                   if(item.position>=56 && item.position<63){
+                       _this.judge(8);//第9节课
+                   }
+               });break;
+                  
+           }
+        },
+        judge(i){
+            var timeArr=['08:10','08:55','09:45','10:30','11:15','14:00','14:45','15:35','16:20'],
+                // tTime=new Date(this.today.signDay+" "+this.today.signTime).getTime(),
+                tTime=new Date(this.today.signDay+" "+'08:50').getTime(),
+                cTime=new Date(this.today.signDay+" "+timeArr[i]).getTime();
+                 console.log(tTime-cTime)
+            if(tTime-cTime<0){
+                if(cTime-tTime<=10*60*1000){
+                   this.signType='0';
                 }
             }else{
-                this.inOrOut=false;
-                console.log('err'+pointMsg);
-            }
-
-
-           
-        },
-        //获取当前签到的时间
-        getTime() {
-            var weekArr = ['周日', '周一', '周二', '周三', '周四', '周五', '周六',]
-            var date = new Date();
-            var month = this.checkDate(date.getMonth() + 1),
-                day = this.checkDate(date.getDate()),
-                week = weekArr[date.getDay()],
-                time = date.getTime();
-            return {
-                "week": week,
-                "day": month + '-' + day,
-                'time':time
-            };
-        },
-        //格式化日期
-        checkDate(date) {
-            if (date < 10) {
-                return '0' + date;
-            } else {
-                return date;
+                if(tTime-cTime<40*1000*60){
+                    this.signType="1";
+                    
+                }else if(tTime-cTime>=40*1000*60){
+                    this.signType='2';
+                    
+                }
             }
         },
-        //筛选需要进行签到的课程
-        fliterCourse(){
-           var arr=[];
-           var _this=this;
-           $.each(_this.scheduleList,(i)=>{
-             var flag=true;
-             if(arr.length>0){
-                $.each(arr,(n)=>{
-                  if(arr[i].positon<35){
-                       if(arr[n].scheduleName == _this.scheduleList[i],scheduleName){
-                           flag=false;
-                       }
-                  }
-                });
-             }
-             if(flag){
-                 arr.push(_this.scheduleList[i])
-             }
-           });
-           return arr;
-        }
+
     }
 
 
@@ -199,8 +307,16 @@ export default {
     width: 100%;
     height: 100%;
     display: flex;
-    flex-direction:column;
+    flex-direction: column;
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -210,7 +326,7 @@ export default {
     height: 132px;
     background: url('../../assets/door_02.png') no-repeat 100% 100%;
     margin-bottom: 10px;
-    flex:1;
+    flex: 1;
 }
 
 .headerImg div {
@@ -222,6 +338,14 @@ export default {
     font-size: 1rem;
     color: #fff;
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -278,6 +402,14 @@ export default {
     line-height: 120px;
     color: #ccc;
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -344,11 +476,13 @@ export default {
     font-size: 0.5rem;
     margin-top: 4px;
 }
-.prompt img{
+
+.prompt img {
     vertical-align: text-bottom;
 }
-.prompt span{
-    font-size:0.5rem;
-    color:#ccc;
+
+.prompt span {
+    font-size: 0.5rem;
+    color: #ccc;
 }
 </style>
