@@ -19,7 +19,6 @@ export default {
                 "实验楼": '113.190115,23.408961;113.190241,23.408696;113.191198,23.408667;113.191193,23.408866',//实验楼围栏坐标
                 "艺术楼": '113.191651,23.40928;113.191593,23.408534;113.192145,23.408551;113.192172,23.409259' //艺术楼围栏坐标
             },
-            havenRail: false,
 
         }
     },
@@ -59,6 +58,14 @@ export default {
                     _this.lng = result.position.lng;
                     _this.lat = result.position.lat;
                     Indicator.close();
+                    //创建围栏
+                    var havenRail = _this.reseacherRail();
+                    if (havenRail) {
+                        for (let i in _this.pointsArr) {
+                            _this.createRail(i, _this.pointsArr[i]);
+                        }
+                    }
+                    _this.returnPoint();
                     //  mapObj.setCenter(result.position)
                 })  //  返回定位信息
                 AMap.event.addListener(geolocation, 'error', (result) => {
@@ -66,26 +73,13 @@ export default {
                 })  //  返回定位出错信息
             });
 
-            //创建围栏
-            this.reseacherRail();
-            // if (!this.havenRail) {
-            //     for (let i in this.pointsArr) {
-            //         this.createRail(i, this.pointsArr[i]);
-            //     }
-            // } else {
-            //     console.log('已创建围栏');
-            // }
 
         },
 
-        //重新定位
-        regeo() {
-            console.log('开始重新定位');
-            this.init();
-        },
+
         //获取当前签到的时间
         getTime() {
-            var weekArr = ['周日', '周一', '二', '周三', '周四', '周五', '周六',]
+            var weekArr = ['周日', '周一', '周二', '周三', '周四', '周五', '周六',]
             var date = new Date();
             var year = date.getFullYear(),
                 month = this.checkDate(date.getMonth() + 1),
@@ -94,15 +88,15 @@ export default {
                 min = this.checkDate(date.getMinutes()),
                 sec = this.checkDate(date.getSeconds()),
                 currentTime = year + '-' + month + '-' + day + " " + hour + ":" + min + ":" + sec,
-                time=date.getTime(),
+                time = date.getTime(),
                 week = weekArr[date.getDay()];
             return {
                 'currentTime': currentTime,
                 "week": week,
                 "day": month + '-' + day,
-                "time":time,
-                'signTime': hour+':'+min,
-                'signDay':year + '-' + month + '-' + day
+                "time": time,
+                'signTime': hour + ':' + min,
+                'signDay': year + '-' + month + '-' + day
             };
         },
         //格式化日期
@@ -142,37 +136,49 @@ export default {
                 url: 'http://restapi.amap.com/v4/geofence/meta?key=1d62d5d73074e9d614c1581397b70a29',
                 success(res) {
                     console.log('已存在围栏');
-                    this.havenRail = true;
+                    return true;
                 },
                 error(err) {
                     console.log('创建围栏失败' + err);
-                    this.havenRail = false;
                     Toast('创建围栏失败！！');
+                    return false;
                 }
             })
         },
         //查询定位是否在围栏中
         returnPoint() {
-            var _this = this;
-            let time = new Date().getTime();
-            console.log('开始测试。。。。');
-            var myData = {};
+            var _this = this, diu = '';
             switch (this.ismobile()) {//没有权限获取识别码，暂代
                 case 'ad':
-                    myData = {
-                        diu: '99001021626653',
-                        locations: this.lng + ',' + this.lat + ',1484816232'
-                    }; break;
+                    diu = '99001021626653'; break;
                 case 'ios':
-                    myData = {
-                        diu: '359241060970941',
-                        //locations: this.lng + ',' + this.lat + ',1484816232'
-                        locations: '113.19043,23.408799' + ',1484816232'
-                    }; break;
+                    diu = '359241060970941'; break;
                 case 'ot': Toast('仅支持Android和IOS系统'); break;
             }
-            return myData;
-           
+            if (this.lng != '' || this.lat != '') {
+                console.log('查询定位是否在围栏中')
+                $.ajax({
+                    url: 'http://restapi.amap.com/v4/geofence/status?key=1d62d5d73074e9d614c1581397b70a29',
+                    type: 'GET',
+                    dataTyep: 'json',
+                    header: 'Access-Control-Allow-Origin:*',
+                    data: { diu: diu, locations: '113.190201,23.410466,1484816232' },
+                    success(res) {
+                        console.log(res);
+                        if (parseInt(res.data.nearest_fence_distance)<50 || res.data.fencing_event_list[0].client_status == 'in') {
+                            _this.$store.commit('inOut', true); return;
+                        } else {
+                            _this.$store.commit('inOut', false); return;
+                        }
+                    },
+                    error(err) {
+                        console.log('err')
+                        Toast(err);
+                        return fasle;
+                    }
+                });
+            }
+
         },
         //判断手机型号
         ismobile() {
@@ -192,7 +198,7 @@ export default {
     },
     mounted() {
         this.init();
-    },
+    }
 
 }
 </script>

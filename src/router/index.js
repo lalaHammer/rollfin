@@ -3,7 +3,7 @@ import Router from 'vue-router'
 import login from '@/components/login/login'
 import home from '@/components/home/home'   
 import schedule from '@/components/schedule/schedule'
-import map from "@/components/geo/map"
+// import map from "@/components/geo/map"
 
 Vue.use(Router)
 
@@ -30,11 +30,11 @@ export default new Router({
       name:'schedule',
       component:schedule
     },
-     {
-      path:'/map',
-      name:'map',
-      component:map
-    }
+    //  {
+    //   path:'/map',
+    //   name:'map',
+    //   component:map
+    // }
     
   ]
 })

@@ -13,6 +13,9 @@ export default{
     },
     whoIs(state,who){
         state.who=who;
+    },
+    inOut(state,inOut){
+        state.inOut=inOut;
     }
   
 }

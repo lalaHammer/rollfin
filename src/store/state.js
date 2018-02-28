@@ -3,4 +3,5 @@ export default{
     scheduleList:{},
     user:{},
     who:'',
+    inOut:false,
 }
