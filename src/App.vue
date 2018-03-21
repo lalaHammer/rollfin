@@ -1,10 +1,8 @@
 <template>
   <div id="app">
     <mt-header :title="title" class="header">
-      <router-link to="/home" slot="left" v-if="$route.path !=='/login' && $route.path !=='/home'">
-        <mt-button icon="back">返回</mt-button>
-      </router-link>
-      <mt-button slot="right">{{user.xm}}</mt-button>
+        <mt-button icon="back" @click="back" slot="left" v-if="$route.path !=='/login'" style="font-size:1rem">退出</mt-button>
+      <mt-button slot="right" style="margin-right:10px;margin-top:2px;">{{user.xm}}</mt-button>
     </mt-header>
     <router-view/>
   </div>
@@ -12,7 +10,7 @@
 
 <script>
 import Vue from 'vue'
-import { Header } from 'mint-ui';
+import { Header,MessageBox } from 'mint-ui';
 import { mapState } from 'vuex'
 import $ from 'jquery'
 
@@ -36,7 +34,17 @@ export default {
     user() {
       return this.$store.state.user;
     }
-  })
+  }),
+  methods:{
+    back(){
+      MessageBox.confirm('确定退出系统？').then(action=>{
+         if(action){
+            this.$router.replace({ path: '/' });
+            this.$store.commit('changeUser', '');
+         }
+      });
+    }
+  }
 }
 //设置字体大小
 function fontSize() {
@@ -59,7 +67,7 @@ window.onresize = fontSize;
   font-size: 1rem;
   /* margin-top: 60px; */
 }
-
+body{margin:0}
 h1,
 .h1 {
   padding: 0;
@@ -67,6 +75,6 @@ h1,
 }
 .header{
   height:2.4rem;
-  font-size: 0.9rem;
+  font-size: 1.1rem;
 }
 </style>

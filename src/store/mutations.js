@@ -16,6 +16,12 @@ export default{
     },
     inOut(state,inOut){
         state.inOut=inOut;
+    },
+    setWeek(state,week){
+        state.week=week;
+    },
+    setTeacherScheduleList(state,scheduleList){
+        state.teacherScheduleList=scheduleList;
     }
   
 }

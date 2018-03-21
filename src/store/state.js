@@ -4,4 +4,6 @@ export default{
     user:{},
     who:'',
     inOut:false,
+    week:'',
+    teacherScheduleList:{},
 }
