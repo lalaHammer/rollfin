@@ -78,7 +78,7 @@
                     </div>
                     <a href="javascript:void(0)" class="search_sign" @click="searchSign">查询</a>
                 </div>
-                <div v-if="showFlag['search_result']=='show'">
+                <div v-if="who && showFlag['search_result']=='show'">
                     <p class="count">
                         考勤统计： 迟到
                         <span>{{search_result.lateCount}}</span>次　 缺勤
@@ -105,8 +105,12 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p v-if="showFlag['load']=='show'">加载完毕</p>
                 </div>
+                <!--教师查询结果  -->
+                <div v-else>
+
+                </div>
+                <p v-if="showFlag['load']=='show'">加载完毕</p>
             </div>
         </div>
 
@@ -118,8 +122,6 @@
 </template>
 
 <script>
-
-
 import Vue from 'vue'
 import AMap from 'AMap'
 import AMapUI from 'AMapUI'
@@ -146,7 +148,8 @@ export default {
             courseSelect: '课程选择',//课程选择
             courseSelectShow: false,
             pageCount: 1,
-            showFlag: { 'dropdown': 'hidden', 'search_result': 'hidden','load':'hidden' },//显示状态[dropdown,]
+            pageSize:2,
+            showFlag: { 'dropdown': 'hidden', 'search_result': 'hidden','load':'hidden' },//显示状态
         }
     },
     created() {
@@ -172,7 +175,6 @@ export default {
             this.scheduleNameList = this.removal(allSchedule, 'scheduleName');
             console.log(this.scheduleNameList)
 
-
         } else {//非法用户跳转回登录页面
             Toast('非法用户登录');
             this.$router.replace({ path: '/' });
@@ -190,8 +192,8 @@ export default {
             if (!$.isEmptyObject(_this.search_result) && scrollTop + clientHeight == scrollHeight) {
                 _this.pageCount++;
                 _this.searchSign();
-                if(_this.pageCount*2>=_this.search_result.length){
-                      _this.showFlag['load']='show';
+                if(_this.pageCount*2>=_this.search_result.lateCount+_this.search_result.absenseCount){
+                    _this.showFlag['load']='show';
                 }
             }
         }
@@ -245,20 +247,20 @@ export default {
         //查询考勤记录
         searchSign() {
             var _this = this;
-            Indicator.open();
             if(this.courseSelect == '课程选择'){
                 Toast('请先选择课程在查询');
-            }
-            else  {
+                return ;
+            }else  {
+                Indicator.open();
                 this.showFlag['search_result'] = 'show';
-                if(this.who){
+                if(this.who){//学生查询
                     this.lateCount = 0;
                     this.absenseCount = 0;
                     $.post({
                     url: 'http://39.108.180.108/liuliequan/php/search.php',
                     dataType: 'json',
                     header: 'Access-Control-Allow-Origin:*',
-                    data: 'number=' + this.user.number + '&course='+ this.courseSelect+'&pageCount=' + this.pageCount*2,
+                    data: 'number=' + this.user.number + '&course='+ this.courseSelect+'&pageCount=' + this.pageCount*this.pageSize,
                     success: res => {
                         Indicator.close();
                         console.log(res);
@@ -266,9 +268,12 @@ export default {
                         Indicator.close();
                     },
                     error: err => {
+                        Indicator.close();
                         console.log(err)
                     }
                 });
+                }else{//教师查询
+
                 }
             }
 
@@ -302,7 +307,7 @@ export default {
         },
         //判断教师当天的课程
         todaySchedule(scheduleList) {
-            var today = this.today.week, todaySchedule = [];
+            var today = 0, todaySchedule = [];
             for (let i = 0; i < scheduleList.length; i++) {
                 if (scheduleList[i].position == today || scheduleList[i].position == today + scheduleList[i].row * 7) {
                     todaySchedule.push(scheduleList[i]);
