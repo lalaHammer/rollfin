@@ -77,4 +77,9 @@ h1,
   height:2.4rem;
   font-size: 1.1rem;
 }
+::-webkit-scrollbar{
+  width:0;
+  height: 0;
+  color:transparent;
+}
 </style>

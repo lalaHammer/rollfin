@@ -87,7 +87,6 @@ export default {
                 header: 'Access-Control-Allow-Origin:*',
                 data: 'username=' + this.username + '&password=' + this.password + '&ip=' + returnCitySN['cip'],
                 success: res => {
-                    Indicator.close();
                     console.log(res);
                     if (res.success) {
                         var user = res.user;
@@ -111,22 +110,20 @@ export default {
                                 }
                             },
                             erroe: err => {
-                                Indicator.close();
                                 Toast(res.errorMessage);
                                 this.clearUsername();
                             }
                         })
                     } else {
-                        Indicator.close();
                         Toast(res.errorMessage);
                         this.clearUsername();
-                        return;
+                        
                     }
+                    Indicator.close();
                 },
                 error: res => {
-                    Indicator.close();
                     Toast(res.errorMessage);
-
+                    Indicator.close();
                 }
 
             })
@@ -159,6 +156,7 @@ export default {
                         Toast(res.errorMessage);
                         this.clearUsername();
                     }
+                   
                 }
 
             })
