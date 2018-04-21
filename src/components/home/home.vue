@@ -12,10 +12,17 @@
                 </ul>
                 <div class="list" v-if="who">
                     <table v-if="scheduleList.length!=0">
+                        <tr>
+                            <td>课程</td>
+                            <td>上课时间</td>
+                            <td>上课地点</th>
+                            <td>授课教师</td>
+                        </tr>
                         <tr v-for="item of scheduleList ">
                             <td>{{item.scheduleName}}</td>
                             <td>{{item.scheduleLesson}}</td>
                             <td>{{item.scheduleLocation}}</td>
+                            <td>{{item.scheduleTeacher}}</td>
                         </tr>
                     </table>
                     <div v-else>
@@ -25,10 +32,10 @@
                 <div class="list" v-else>
                     <table v-if="teacherSchedule.length!=0">
                         <tr>
-                            <th>课程名</th>
-                            <th>时间</th>
-                            <th>上课地点</th>
-                            <th>班级</th>
+                            <td>课程</td>
+                            <td>上课时间</td>
+                            <td>上课地点</td>
+                            <td>班级</td>
                         </tr>
                         <tr v-for="item of teacherSchedule ">
                             <td>{{item.scheduleName}}</td>
@@ -159,7 +166,7 @@ export default {
             week: this.$store.state.week,//当前周(学生账号可见)
             who: true,//用户登录标识，教师账号为false(0)，学生账号为true(1)
             today: {},
-            inOrOut: false,//是否在定位围栏中
+            inOrOut: true,//是否在定位围栏中
             user: this.$store.state.user,
             signType: '',
             signCourse: '',
@@ -224,9 +231,23 @@ export default {
                 }
             }
         }
+        if(!this.inOrOut){
+           setInterval(()=>{
+               this.init();
+           },1000);
+        }
+        if(this.inOrOut){
+            clearInterval();
+        }
+
+        console.log(this.inOrOut);
     },
     mounted() {
         if (this.$store.state.user.username) {//学生账号登录初始定位
+          Indicator.open({
+                text: '正在定位请稍后',
+                spinnerType: 'fading-circle'
+            });
            this.init();
         }
         this.today = this.getTime();
@@ -423,7 +444,9 @@ export default {
                             if (this.search_result.success != 'true') {
                                     this.showFlag['search_result'] = 'show';
                             }
-                            Indicator.close();
+                           setTimeout(()=>{
+                                Indicator.close();
+                           },1000)
                         },
                         error: err => {
                             Toast('查询失败');
@@ -471,7 +494,9 @@ export default {
                                     console.log(this.teacher_result)
                                 }, 200);
                             }
-                            Indicator.close();
+                            setTimeout(()=>{
+                                Indicator.close();
+                           },1000)
                         },
                         error: err => {
                             Toast('查询失败');
@@ -520,7 +545,14 @@ export default {
         //重新查询
         reSearchSign() { Indicator.open(); this.searchSign() },
         //重新定位
-        rgeo() { this.init() },
+        rgeo() { 
+             clearInterval();
+            Indicator.open({
+                text: '正在定位请稍后',
+                spinnerType: 'fading-circle'
+            });
+            this.init() ;
+        },
         //格式化星期
         checkWeek(week) {
             var weekArr = ['周日', '周一', '周二', '周三', '周四', '周五', '周六',]
@@ -547,11 +579,6 @@ export default {
 
         //定位相关
         init() {//获取定位信息
-            Indicator.open({
-                text: '正在定位请稍后',
-                spinnerType: 'fading-circle'
-            });
-
             //  创建地图
             let mapObj = new AMap.Map('map-container', {
                 center: [117.000923, 36.675807],
@@ -686,8 +713,8 @@ export default {
                     type: 'GET',
                     dataTyep: 'json',
                     header: 'Access-Control-Allow-Origin:*',
-                    // data: { diu: diu, locations: lng + ',' + lat + ',1484816232' },
-                    data: { diu: diu, locations:'113.191575,23.41054,1484816232' },
+                    data: { diu: diu, locations: lng + ',' + lat + ',1484816232' },
+                    // data: { diu: diu, locations:'113.190822,23.410491,1484816232' },
                     success(res) {
                         console.log(res);
                         if (parseInt(res.data.nearest_fence_distance) < 20 || res.data.fencing_event_list[0].client_status == 'in') {
@@ -696,7 +723,10 @@ export default {
                         } else {
                             console.log('不在围栏中');
                             _this.inOrOut = false;
-                            Toast('距离最近的签到地点' + res.data.nearest_fence_distance + '米');
+                            Toast({
+                                message:'距离最近的签到地点' + res.data.nearest_fence_distance + '米',
+                                duration:2000
+                            });
                         }
                     },
                     error(err) {

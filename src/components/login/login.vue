@@ -67,14 +67,6 @@ export default {
                 } else {
                     this.login();
                 }
-                // var userType=$('.select_area input[type=radio]:checked').val();
-                // if(userType=='student'){
-                //     console.log('student');
-                // }else if(userType=='teacher'){
-                //     console.log('teacher');
-                // }else{
-                //     console.log('非法yonghu')
-                // }
             }
 
         },

@@ -22,6 +22,6 @@ export default{
     },
     setTeacherScheduleList(state,scheduleList){
         state.teacherScheduleList=scheduleList;
-    }
+    },
   
 }

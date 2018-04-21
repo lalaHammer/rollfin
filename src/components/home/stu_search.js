@@ -1,8 +1,7 @@
-import { Toast, Indicator } from 'mint-ui'
+import { Toast } from 'mint-ui'
 import $ from 'jquery'
 
 export default{
-    
         //筛选需要进行签到的课程
         filterCourse() {
             var arr = [], arr2 = [];
@@ -39,8 +38,8 @@ export default{
 
         //判断当前是否为可签到时间
         judgeTime(arr) {
-            //var thisHour=new Date().getHours(),
-            var thisHour = new Date().getHours(),
+            // var thisHour = new Date().getHours(),
+            var thisHour=9,
                 _this = this;
             console.log(thisHour);
             switch (thisHour) {

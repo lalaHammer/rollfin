@@ -3,6 +3,7 @@ import AMapUI from 'AMapUI'
 import { Toast, Indicator } from 'mint-ui'
 import $ from 'jquery'
 export default{
+   
     init() {//获取定位信息
             Indicator.open({
                 text: '正在定位请稍后',
@@ -40,7 +41,7 @@ export default{
                     Indicator.close();
                     //创建围栏
                     var pointsArr = {
-                        '教学楼': '113.190061,23.410619;113.191678,23.410603;113.190066,23.410412;113.191678,23.410375',//教学楼围栏坐标
+                        '教学楼': '113.190043,23.410623;113.19007,23.410408;113.191687,23.410607;113.191687,23.41037',//教学楼围栏坐标
                         "实验楼": '113.190115,23.408961;113.190241,23.408696;113.191198,23.408667;113.191193,23.408866',//实验楼围栏坐标
                         "艺术楼": '113.191651,23.40928;113.191593,23.408534;113.192145,23.408551;113.192172,23.409259' //艺术楼围栏坐标
                     };
@@ -143,16 +144,20 @@ export default{
                     type: 'GET',
                     dataTyep: 'json',
                     header: 'Access-Control-Allow-Origin:*',
-                    data: { diu: diu, locations: lng + ',' + lat + ',1484816232' },
+                    // data: { diu: diu, locations: lng + ',' + lat + ',1484816232' },
+                    data: { diu: diu, locations:'113.191575,23.41054,1484816232' },
                     success(res) {
                         console.log(res);
-                        if (parseInt(res.data.nearest_fence_distance) < 20 && res.data.fencing_event_list[0].client_status == 'in') {
+                        if (parseInt(res.data.nearest_fence_distance) < 20 || res.data.fencing_event_list[0].client_status == 'in') {
                             console.log('在围栏中');
-                            _this.inOrOut = true;
+                            // this.$store.commit('decideInOROut',true);
+                            console.log(_this);
+                            return {inorout:'in'};
                         } else {
                             console.log('不在围栏中');
                             _this.inOrOut = false;
-                            Toast('距离最近的签到地点' + res.data.nearest_fence_distance + '米')
+                            Toast('距离最近的签到地点' + res.data.nearest_fence_distance + '米');
+                           return {inorout:'out'};
                         }
                     },
                     error(err) {
@@ -177,5 +182,4 @@ export default{
                 return 'ot';
             }
         },
-
 }
